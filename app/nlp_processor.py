@@ -14,6 +14,7 @@ class NLPProcessor:
     def __init__(self, model: Optional[SentenceTransformer] = None):
         """Initialize the NLP processor with an optional preloaded model."""
         self._model = model
+        self.max_thesis_sentences = 3  # Maximum number of sentences to return as thesis
         logger.info("NLPProcessor initialized (model will be loaded on first use)")
 
     @property
@@ -41,12 +42,12 @@ class NLPProcessor:
             # Calculate similarity matrix
             similarity_matrix = cosine_similarity(embeddings)
             
-            # Find the most central sentence (highest average similarity to others)
+            # Find the most central sentences (highest average similarity to others)
             avg_similarities = np.mean(similarity_matrix, axis=1)
-            central_idx = np.argmax(avg_similarities)
+            central_indices = np.argsort(avg_similarities)[-self.max_thesis_sentences:][::-1]
             
-            # Return the most central sentence as the thesis
-            return [sentences[central_idx]]
+            # Return the most central sentences as the thesis
+            return [sentences[i] for i in central_indices]
             
         except Exception as e:
             logger.error(f"Error extracting thesis: {str(e)}")
