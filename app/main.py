@@ -46,7 +46,7 @@ async def startup_event():
         logger.info("Step 1: Initializing NLP processor...")
         try:
             global nlp_processor, feed_processor
-            nlp_processor = NLPProcessor()
+            nlp_processor = NLPProcessor()  # Model will be loaded on first use
             logger.info("NLP processor initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize NLP processor: {str(e)}")
