@@ -1,0 +1,247 @@
+openapi: 3.0.0
+info:
+  title: Insight Extractor API
+  description: Extract and cluster thesis statements from RSS feeds
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: Root endpoint
+      description: Returns available endpoints and basic API information
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  endpoints:
+                    type: object
+                    properties:
+                      GET /:
+                        type: string
+                      POST /init-db:
+                        type: string
+                      POST /ingest:
+                        type: string
+                      GET /posts:
+                        type: string
+                      GET /themes:
+                        type: string
+                      GET /posts/{post_id}:
+                        type: string
+                      GET /themes/{theme_id}:
+                        type: string
+                      GET /posts/theme/{theme_id}:
+                        type: string
+                      GET /posts/search:
+                        type: string
+
+  /init-db:
+    post:
+      summary: Initialize database
+      description: Creates the necessary database tables
+      responses:
+        '200':
+          description: Database initialized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+  /ingest:
+    post:
+      summary: Ingest RSS feed
+      description: Process a new RSS feed URL and extract themes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                feed_url:
+                  type: string
+                  format: uri
+              required:
+                - feed_url
+      responses:
+        '200':
+          description: Feed processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  processed:
+                    type: integer
+                  skipped:
+                    type: integer
+                  total_time:
+                    type: number
+                    format: float
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+  /posts:
+    get:
+      summary: Get all posts
+      description: Retrieve all posts from the database
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+  /themes:
+    get:
+      summary: Get all themes
+      description: Retrieve all themes from the database
+      responses:
+        '200':
+          description: List of themes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Theme'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+  /themes/{theme_id}:
+    get:
+      summary: Get theme timeline
+      description: Get a timeline of posts for a specific theme
+      parameters:
+        - name: theme_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Theme timeline
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  theme_id:
+                    type: integer
+                  thesis:
+                    type: string
+                  posts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        url:
+                          type: string
+                        published_at:
+                          type: string
+                          format: date-time
+                        ingested_at:
+                          type: string
+                          format: date-time
+        '404':
+          description: Theme not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+        content:
+          type: string
+        published_at:
+          type: string
+          format: date-time
+        ingested_at:
+          type: string
+          format: date-time
+        theme_id:
+          type: integer
+          nullable: true
+      required:
+        - title
+        - url
+        - content
+        - published_at
+
+    Theme:
+      type: object
+      properties:
+        id:
+          type: integer
+        thesis:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - thesis 
