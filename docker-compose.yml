@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build: .
@@ -14,4 +12,5 @@ services:
       - SIMILARITY_THRESHOLD=0.8
       - MAX_THESIS_SENTENCES=2
       - LOG_LEVEL=INFO
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
     restart: unless-stopped
